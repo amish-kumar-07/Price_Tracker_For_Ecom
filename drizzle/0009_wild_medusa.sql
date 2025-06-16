@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "asin" varchar(256) NOT NULL;

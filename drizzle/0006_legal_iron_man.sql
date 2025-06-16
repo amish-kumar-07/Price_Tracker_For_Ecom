@@ -1,0 +1,1 @@
+ALTER TABLE "notifications_setting" ADD COLUMN "asin" varchar(200) NOT NULL;
