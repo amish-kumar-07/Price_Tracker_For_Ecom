@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { useState , useRef  } from "react"
 import { Minus, Plus } from "lucide-react"
 import { Bar, BarChart, ResponsiveContainer } from "recharts"
 import { useUser } from '@/app/context/UserContext';
-
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,60 +18,50 @@ import {
 } from "@/components/ui/drawer"
 
 const data = [
-  {
-    goal: 400,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 239,
-  },
-  {
-    goal: 300,
-  },
-  {
-    goal: 200,
-  },
-  {
-    goal: 278,
-  },
-  {
-    goal: 189,
-  },
-  {
-    goal: 349,
-  },
-]
+  { goal: 400 }, { goal: 300 }, { goal: 200 },
+  { goal: 300 }, { goal: 200 }, { goal: 278 },
+  { goal: 189 }, { goal: 239 }, { goal: 300 },
+  { goal: 200 }, { goal: 278 }, { goal: 189 },
+  { goal: 349 },
+];
 
 export function DrawerDemo() {
-  const [goal, setGoal] = React.useState(1);
-  const { setTracking_Frequency } = useUser(); // ✅ access it from context
-
+  const [goal, setGoal] = useState(1);
+  const { userEmail, setTrackingFrequency } = useUser(); // ✅ HOOK moved to top
+  const closeRef = useRef<HTMLButtonElement>(null);
   function onClick(adjustment: number) {
     const newGoal = ((goal - 1 + adjustment + 24) % 24) + 1;
     setGoal(newGoal);
   }
 
+  async function handleSubmit() {
+    const email = userEmail || localStorage.getItem('email');
+    const goalValue = goal;
 
-  function handleSubmit() {
-    setTracking_Frequency(`${goal}`);
-    console.log("Tracking frequency updated to:", goal);
+    if (!email || isNaN(goalValue)) {
+      console.error('Missing email or invalid frequency');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/setups/setfreq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, freq: goalValue }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update frequency');
+
+      await res.json();
+      setTrackingFrequency(goalValue);
+      localStorage.setItem('frequency', goalValue.toString());
+      console.log('Tracking frequency updated to:', goalValue);
+      if (closeRef.current) {
+        closeRef.current.click();
+      }
+    } catch (err) {
+      console.error('Error updating frequency:', err);
+    }
   }
 
   return (
@@ -117,7 +106,7 @@ export function DrawerDemo() {
           <DrawerFooter>
             <Button onClick={handleSubmit}>Submit</Button>
             <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button ref={closeRef} variant="outline">Cancel</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

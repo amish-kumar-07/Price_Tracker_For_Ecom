@@ -152,9 +152,10 @@ export const notificationsSetting = pgTable(
 /* ------------------------------------------------------------------ */
 
 export const context = pgTable('context', {
-  id: serial('id').primaryKey(),          // auto-incrementing integer ID
-  userId: integer('user_id').notNull(),   // integer user ID
-  email: text('email').notNull(),         // email as text
-  name: text('name').notNull(),           // name as text
-  frequency: integer('frequency').default(3).notNull(), // frequency defaulting to 2
+  id : serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  frequency: integer('frequency').default(3),
 });
+

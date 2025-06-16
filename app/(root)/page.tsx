@@ -15,7 +15,7 @@ export function SignupFormDemo() {
   const route = useRouter();
   const [email , setemail] = useState<string | undefined>('');
   const [password , setpassword] = useState<string | undefined>('');
-  const { setUserId , setuserEmail} = useUser();
+  const { login } = useUser();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
@@ -36,9 +36,11 @@ export function SignupFormDemo() {
 
       if (response.ok) {
         console.log('User login success:', data.user.id);
-        setUserId(data.user.id);
-        setuserEmail(data.user.email);
-        localStorage.setItem("userId", data.user.id);
+         login({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+          });
         route.push(`/dashboard`);
       } else {
         console.error('Login failed:', data.message);

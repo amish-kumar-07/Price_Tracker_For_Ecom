@@ -3,23 +3,19 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { eq, and } from 'drizzle-orm';
 import { context } from '@/app/db/schema';
 
-// Define your request body type
 interface RequestBody {
   email: string;
   user_id: number;
   name: string;
 }
 
-// Initialize database
 const db = drizzle(process.env.DATABASE_URL!);
 
 export async function POST(request: NextRequest) {
   try {
     const body: RequestBody = await request.json();
-
     const { email, user_id, name } = body;
 
-    // Input validation
     if (
       typeof email !== 'string' ||
       typeof user_id !== 'number' ||
@@ -31,14 +27,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
     let existingUser = await db
       .select()
       .from(context)
       .where(and(eq(context.email, email), eq(context.userId, user_id)))
       .limit(1);
 
-    // If not found, insert user
     if (existingUser.length === 0) {
       const insertedUser = await db
         .insert(context)
@@ -46,7 +40,7 @@ export async function POST(request: NextRequest) {
           userId: user_id,
           email: email,
           name: name,
-          frequency: 3, // default frequency as number
+          frequency: 3,
         })
         .returning();
 
@@ -62,6 +56,7 @@ export async function POST(request: NextRequest) {
           id: user.userId,
           email: user.email,
           name: user.name,
+          frequency: user.frequency,
         },
       },
       { status: 200 }

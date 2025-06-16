@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
     if (!check) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
-
     // On success, you can return user info (omit sensitive info like passwordHash in real apps)
     return NextResponse.json({ message: 'Login successful', user: {id : existingUser[0].userId, email: existingUser[0].email, name: existingUser[0].name } }, { status: 200 });
   } catch (error) {

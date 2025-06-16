@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       isAmazonChoice, isFkAssured,
     } = body;
 
+    console.log(asin);
     // TODO: validate body here
     const original_price_num = cleanPrice(originalPrice);
     const current_price_num = cleanPrice(currentPrice);
