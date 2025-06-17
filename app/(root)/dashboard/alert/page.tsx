@@ -6,27 +6,27 @@ import ProductCard, { Product } from "../_components/alertcard";
 
 
 function Page() {
-  const { Tracking_Frequency } = useUser();
+  const { Tracking_Frequency ,userEmail , loading } = useUser();
   const [products, setProducts] = useState<Product[]>([]);
   
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/setups/fetchdata", {
+      if (!userEmail) return; // ⛔ Double check here too
+      const res = await fetch(`http://localhost:3000/api/setups/fetchdata?email=${userEmail}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
       const result = await res.json();
       console.log("Fetched data:", result.data);
-      if (res.ok) setProducts(result.data || []);
+      if (res.ok){
+          setProducts(result.data || []);
+          console.log("Here is the output : ",result.data);
+      }
       else console.error("Fetch failed:", result.message);
     } catch (err) {
       console.log("Error found: ", err);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  }, [userEmail]);// 👈 r
 
   const handleDeleted = useCallback(
     (asin: string, url: string) => {
@@ -36,6 +36,22 @@ function Page() {
     },
     []
   );
+  
+  const handletracking = useCallback((asin: string, status: boolean) => {
+    setProducts(prev =>
+      prev.map(p =>
+        p.asin === asin ? { ...p, status } : p
+      )
+    );
+  }, []);
+
+
+  useEffect(() => {
+    if (!loading && userEmail) {
+      fetchData();
+    }
+  }, [fetchData, loading, userEmail]);
+
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-white dark:bg-black">
@@ -57,6 +73,7 @@ function Page() {
           product={product}
           trackingFrequency={Tracking_Frequency}
           onDeleted={handleDeleted}
+          onTracking={handletracking}
         />
       ))}
 

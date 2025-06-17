@@ -7,6 +7,7 @@ export function UserProvider({ children }) {
   const [userId, setUserId] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
   const [Tracking_Frequency, setTrackingFrequency] = useState(3);
+  const [loading, setLoading] = useState(true);
 
   // 🔁 Load user from localStorage on mount
   useEffect(() => {
@@ -29,6 +30,7 @@ export function UserProvider({ children }) {
         .then((data) => {
           setTrackingFrequency(data.user?.frequency ?? 3);
           console.log("Data at fetch from context : ",data);
+          setLoading(false);
         })
         .catch((err) => console.error('Error fetching freq:', err));
     }
@@ -52,6 +54,7 @@ export function UserProvider({ children }) {
     userId,
     userEmail,
     Tracking_Frequency,
+    loading,
     login,
     logout,
     setTrackingFrequency,

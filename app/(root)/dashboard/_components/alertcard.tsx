@@ -1,9 +1,10 @@
 /* components/ProductCard.tsx */
 "use client";
-import { useCallback , useEffect } from "react";
+import { useCallback , useState } from "react";
 import { DrawerDemo } from "../_components/alert";
 import { DropdownMenuDemo } from "../_components/dropdown";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 
 export type Product = {
   name: string;
@@ -19,20 +20,26 @@ export type Product = {
   has_prime?: boolean;
   is_best_seller?: boolean;
   is_amazon_choice?: boolean;
+  status?:boolean;
 };
 
 interface ProductCardProps {
   product: Product;
   trackingFrequency: number | string;
   onDeleted: (asin: string, url: string) => void;
+  onTracking: (asin: string, status: boolean) => void;
 }
 
 export default function ProductCard({
   product,
   trackingFrequency,
-  onDeleted
+  onDeleted,
+  onTracking,
 }: ProductCardProps) {
     const router = useRouter();
+    const [trackingStatus, setTrackingStatus] = useState(product.status ?? false);
+    const { userEmail } = useUser();
+
     const deleteProduct = useCallback(async () => {
     try {
         const response = await fetch("http://localhost:3000/api/setups/delete", {
@@ -57,7 +64,38 @@ export default function ProductCard({
         console.error("Error found:", err);
         alert("Process failed! Nothing was deleted.");
     }
-    }, [product.asin, product.url, onDeleted]); // include 'product' as a dependency
+  }, [product.asin, product.url, onDeleted]); // include 'product' as a dependency
+ 
+  const toggleTrackingStatus = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/setups/tracking", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          asin: product.asin,
+          email: userEmail,
+          status: !trackingStatus,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        console.error("Status toggle failed:", data.message);
+        alert(data.message || "Status toggle failed.");
+        return;
+      }
+
+      // ✅ Update local state
+      setTrackingStatus(prev => !prev);
+
+      // ✅ Notify parent to update global state
+      onTracking(product.asin, !trackingStatus);
+    } catch (err) {
+      console.error("Error toggling tracking:", err);
+      alert("Something went wrong while changing tracking.");
+    }
+  }, [product.asin, trackingStatus, userEmail, onTracking]);
+
  
   return (
     <div className="mt-6 w-[80%] min-h-[30vh] bg-blue-100 dark:bg-zinc-800 rounded-lg border-2 border-blue-300 p-6">
@@ -85,9 +123,22 @@ export default function ProductCard({
         {/* Status + actions */}
         <div className="flex items-center gap-4 self-end md:self-center">
           <div className="flex flex-col gap-6">
-            <button className="px-4 py-2 bg-green-200 text-green-900 rounded-md text-sm dark:bg-green-700 dark:text-white">
-              Tracking&nbsp;Active
-            </button>
+            {trackingStatus ? (
+              <button
+                onClick={toggleTrackingStatus}
+                className="px-4 py-2 bg-green-200 text-green-900 rounded-md text-sm dark:bg-green-700 dark:text-white"
+              >
+                Tracking&nbsp;Active
+              </button>
+            ) : (
+              <button
+                onClick={toggleTrackingStatus}
+                className="px-4 py-2 bg-red-200 text-red-900 rounded-md text-sm dark:bg-red-700 dark:text-white"
+              >
+                Tracking&nbsp;Disabled
+              </button>
+            )}
+
             <DropdownMenuDemo />
           </div>
 

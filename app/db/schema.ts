@@ -46,10 +46,11 @@ export const products = pgTable(
     originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
 
     priceString: varchar("price_string", { length: 100 }),
-
+    
     stars: decimal("stars", { precision: 3, scale: 2 }),
     totalReviews: integer("total_reviews"),
 
+    status : boolean("status").default(true),
     hasPrime: boolean("has_prime").default(false),
     isBestSeller: boolean("is_best_seller").default(false),
     isAmazonChoice: boolean("is_amazon_choice").default(false),
