@@ -46,16 +46,15 @@ export const products = pgTable(
     originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
 
     priceString: varchar("price_string", { length: 100 }),
-    
+
     stars: decimal("stars", { precision: 3, scale: 2 }),
     totalReviews: integer("total_reviews"),
 
-    status : boolean("status").default(true),
     hasPrime: boolean("has_prime").default(false),
     isBestSeller: boolean("is_best_seller").default(false),
     isAmazonChoice: boolean("is_amazon_choice").default(false),
     isFkAssured: boolean("is_fk_assured").default(false),
-
+    status: boolean('status').default(true),
     lastUpdated: timestamp("last_updated").defaultNow(),
   },
   table => ({
@@ -113,50 +112,36 @@ export const priceHistory = pgTable(
 /* ------------------------------------------------------------------ */
 /*  NOTIFICATION SETTINGS / LOG                                       */
 /* ------------------------------------------------------------------ */
-export const notificationsSetting = pgTable(
-  "notifications_setting",
+export const notificationSettings = pgTable(
+  "notification_settings",
   {
     id: serial("id").primaryKey(),
 
-    userId: integer("user_id")
-      .notNull()
-      .references(() => users.userId, { onDelete: "cascade" }),
+    email: varchar("email", { length: 255 }).notNull(),
+    asin: varchar("asin", { length: 255 }).notNull(),
 
-    productId: integer("product_id")
-      .notNull()
-      .references(() => products.productId, { onDelete: "cascade" }),
+    frequency: integer("frequency").default(3).notNull(), // in hours
+    lastUpdated: timestamp("last_updated").defaultNow(),
 
-    email: varchar("email", { length: 150 }).notNull(),   // where to send alert
-    asin: varchar("asin", { length: 200 }).notNull(),     // duplicate key for convenience
+    status: boolean("status").default(true), // if alerts are enabled
+    currentPrice: decimal("current_price", { precision: 10, scale: 2 }).notNull(),
 
-    savedPrice: decimal("saved_price", { precision: 10, scale: 2 }).notNull(), // target
-    trackingFrequency: integer("tracking_frequency").notNull().default(180),   // minutes
-
-    type: varchar("type", { length: 50 }).notNull(),      // "price_drop" | ...
-    title: varchar("title", { length: 225 }),
-
-    status: boolean("status").default(false),             // sent?
-    initialTime: timestamp("initial_time", { withTimezone: true }),
+    // Optional but helpful: link to users/products table for constraints
+    userId: integer("user_id").references(() => users.userId, { onDelete: "cascade" }),
   },
   table => ({
-    uniqueAlert: index("notifications_unique_alert_idx").on(
-      table.userId,
-      table.productId,
-      table.type,
-    ),
-  }),
+    userAsinIndex: index("notification_user_asin_idx").on(table.email, table.asin),
+  })
 );
-
 
 /* ------------------------------------------------------------------ */
 /*  context / userContext                                       */
 /* ------------------------------------------------------------------ */
 
 export const context = pgTable('context', {
-  id : serial('id').primaryKey(),
-  userId: integer('user_id').notNull(),
-  email: varchar('email', { length: 255 }).notNull(),
-  name: varchar('name', { length: 255 }).notNull(),
-  frequency: integer('frequency').default(3),
+  id: serial('id').primaryKey(),          // auto-incrementing integer ID
+  userId: integer('user_id').notNull(),   // integer user ID
+  email: text('email').notNull(),         // email as text
+  name: text('name').notNull(),           // name as text
+  frequency: integer('frequency').default(3).notNull(), // frequency defaulting to 2
 });
-

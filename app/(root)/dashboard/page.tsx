@@ -7,24 +7,8 @@ import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { MultiStepLoader as Loader } from "@/components/ui/multi-step-loader";
 import { IconSquareRoundedX } from "@tabler/icons-react";
 import { useUser } from "@/app/context/UserContext"; // ✅ correct
+import { Progress } from "@/components/ui/progress";
 
-
-// type Product = {
-//   name: string;
-//   image: string;
-//   stars: number;
-//   total_reviews: number;
-//   price_string: string;
-//   price: number;
-//   original_price?: {
-//     price_string: string;
-//   } | null; // Make sure this can be null
-//   asin: string;
-//   url: string;
-//   has_prime?: boolean;
-//   is_best_seller?: boolean;
-//   is_amazon_choice?: boolean;
-// };
 
 type Product = {
   name: string;
@@ -57,7 +41,8 @@ export default function Page() {
   const [products, setProduct] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const { userId , userEmail } = useUser();
-  
+  const [progress, setProgress] = useState<number | null>(null);
+
   const placeholders = [
     "What's the first rule of Fight Club?",
     "Alert will be sent on respective email registered?",
@@ -65,14 +50,59 @@ export default function Page() {
     "Write a JavaScript method to reverse a string",
     "How to assemble your own PC?",
   ];
- 
+
+  const addNotification = async (product: Product) => {
+    try {
+      const notificationPayload = {
+        email: userEmail,
+        asin: product.asin,
+        currentPrice: product.price ?? 0,
+        frequency: 3,
+        status: true,
+        userId,
+      };
+
+      console.log("📤 Sending notification payload:", notificationPayload);
+
+      const response = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notificationPayload),
+      });
+
+      const contentType = response.headers.get("content-type");
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${errorText}`);
+      }
+
+      if (!contentType?.includes("application/json")) {
+        const html = await response.text();
+        throw new Error(`Expected JSON, got HTML: ${html.substring(0, 100)}...`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      console.error("❌ Error setting up notification:", error.message);
+      throw error;
+    }
+  };
+
+
+
   // Updated handleclick function
   const handleclick = async (product: Product) => {
     if (!userId || !userEmail) {
       alert("⚠️ User not found. Please log in.");
       return;
     }
-
+    if(!product.asin)
+    {
+      alert("This Product don't have any unique ID!.So Can't Be added into the database");
+      return ;
+    }
     // Debug: Log the raw product details
     console.log("Product received:", product);
     console.log("Original price:", product.original_price);
@@ -98,7 +128,7 @@ export default function Page() {
       isAmazonChoice: product.is_amazon_choice ?? false,
       isFkAssured: false,
     };
-
+    setProgress(10);
     // Debug: Show final payload
     console.log("Final payload being sent to /api/product:", payload);
 
@@ -110,22 +140,28 @@ export default function Page() {
       });
 
       const data = await response.json();
-
+     
       if (!response.ok) {
         console.error("❌ Failed to add product:", data.message);
         alert(`❌ Error: ${data.message}`);
         return;
       }
-
+      setProgress(50);
       if (data.message.includes("already in your tracking list")) {
-        alert("📝 This product is already in your tracking list!");
+        //alert("📝 This product is already in your tracking list!");
       } else {
-        alert("🔔 Product added to your tracking list successfully!");
+        //alert("🔔 Product added to your tracking list successfully!");
       }
+      const notifyRes = await addNotification(product);
+      //alert("🔔 Notification set up successfully!");
+      console.log("Notification : ",notifyRes);
+      setProgress(100);
 
+      setTimeout(() => setProgress(null), 600);
     } catch (error) {
       console.error("🔥 Unexpected error:", error);
-      alert("⚠️ Something went wrong. Please try again.");
+      setProgress(null);
+      //alert("⚠️ Something went wrong. Please try again.");
     }
   };
 
@@ -168,6 +204,14 @@ export default function Page() {
           </button>
         </>
       )}
+
+      {/* ⇢ Center‑screen progress bar (show while progress !== null) */}
+      {progress !== null && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <Progress value={progress} className="w-2/3 max-w-md" />
+        </div>
+      )}
+
 
       {/* Navigation */}
       <div className="w-full flex justify-evenly items-center">
