@@ -4,6 +4,12 @@
 ![Explain](https://github.com/user-attachments/assets/837d42ae-6898-485f-9141-c7011e570ba0)
 
 
+## Dependent
+1. Redis
+2. Scrapper Api
+3. Bull Mq
+4. DB
+
 
 ## Getting Started
 
