@@ -30,16 +30,22 @@ REDIS_URL=redis://localhost:6379
 ```
 ## Getting Started
 
-First, run the development server:
+1. First, Git Clone:
+
+```bash
+git clone https://github.com/amish-kumar-07/Price_Tracker_For_Ecom
+```
+2. Then Install Dependecies:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+3. Configure Env:
+4. Install Redis using Docker 
+5. Run Redis using Docker 
+
+```bash
+docker run -itd -p 6379:6379 redis
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
