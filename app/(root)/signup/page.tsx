@@ -24,14 +24,15 @@ export function SignupFormDemo() {
       alert("Please fill out all the fields."); // or set an error state to show in UI
       return;
     }
-
+  
+    const newemail = email.trim().toLowerCase();
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email: newemail, password }),
       });
 
       const data = await response.json();

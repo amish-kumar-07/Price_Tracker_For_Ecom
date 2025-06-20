@@ -8,28 +8,19 @@ const db = drizzle(process.env.DATABASE_URL!); // ideally reuse this elsewhere
 function cleanPrice(price: string | number): number {
   if (typeof price === "number") return price;
   
-  // Handle null, undefined, or empty strings
   if (!price || price === "") return 0;
   
-  // Convert to string and remove currency symbols and spaces
-  let cleanedPrice = String(price).replace(/[₹$€£¥,\s]/g, "");
-
-  const decimalMatch = cleanedPrice.match(/^(.+)\.(\d{1,2})$/);
-  
-  if (decimalMatch) {
-    // It's a decimal number - remove any remaining non-digits except the final decimal point
-    cleanedPrice = cleanedPrice.replace(/[^\d.]/g, "");
-  } else {
-    // It's likely an integer with comma separators - remove all non-digits
-    cleanedPrice = cleanedPrice.replace(/[^\d]/g, "");
+  let cleanedCash = price.replace(/[\p{Sc},]/gu, "").trim();
+  let ans = "";
+  for (let i = 0; i < cleanedCash.length; i++) {
+    if (cleanedCash[i] != ',') {
+      ans += cleanedCash[i];
+    }
   }
-  
-  // Convert to number
-  const numPrice = parseFloat(cleanedPrice);
-  
-  // Return 0 if parsing failed
-  return isNaN(numPrice) ? 0 : numPrice;
+
+  return parseInt(ans);
 }
+
 
 export async function POST(request: NextRequest) {
   try {

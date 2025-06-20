@@ -1,0 +1,1 @@
+ALTER TABLE "notification_settings" ADD CONSTRAINT "notification_settings_asin_products_asin_fk" FOREIGN KEY ("asin") REFERENCES "public"."products"("asin") ON DELETE cascade ON UPDATE no action;

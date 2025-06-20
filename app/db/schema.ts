@@ -37,7 +37,7 @@ export const products = pgTable(
     name: varchar("name", { length: 256 }).notNull(),
     url: varchar("url", { length: 1024 }).notNull().unique(),
     image: varchar("image", { length: 1024 }),
-    asin: varchar("asin", { length: 256 }).notNull(),
+    asin: varchar("asin", { length: 256 }).notNull().unique(),
 
     platform: varchar("platform", { length: 50 }).notNull(), // "amazon", "flipkart", "myntra"
     platformProductId: varchar("platform_product_id", { length: 100 }),
@@ -118,7 +118,8 @@ export const notificationSettings = pgTable(
     id: serial("id").primaryKey(),
 
     email: varchar("email", { length: 255 }).notNull(),
-    asin: varchar("asin", { length: 255 }).notNull(),
+    asin: varchar("asin", { length: 255 }) .notNull()
+      .references(() => products.asin, { onDelete: "cascade" }),
 
     frequency: integer("frequency").default(3).notNull(), // in hours
     lastUpdated: timestamp("last_updated").defaultNow(),

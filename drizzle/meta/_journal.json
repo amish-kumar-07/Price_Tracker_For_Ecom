@@ -15,6 +15,20 @@
       "when": 1750219156325,
       "tag": "0001_ordinary_payback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750400693601,
+      "tag": "0002_big_wither",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750400811997,
+      "tag": "0003_dapper_bastion",
+      "breakpoints": true
     }
   ]
 }
