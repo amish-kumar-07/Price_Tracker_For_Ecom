@@ -90,7 +90,7 @@ You’re receiving this because you set up an alert in the Price‑Tracker app.
 
   return {
     from: `"Price‑Tracker" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
-    to: email.toLowerCase(),
+    to: email,
     subject,
     html,
     text,

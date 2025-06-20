@@ -19,7 +19,7 @@ export function SignupFormDemo() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
-
+    const newemail = email?.trim().toLowerCase();
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -27,7 +27,7 @@ export function SignupFormDemo() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email : newemail,
           password,
         }),
       });
