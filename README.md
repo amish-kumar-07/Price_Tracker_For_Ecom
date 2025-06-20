@@ -13,6 +13,7 @@
 4. DB
 5. Nodemailer
 6. Docker
+7. Vercel Cron
 
 ## Getting Started
 
