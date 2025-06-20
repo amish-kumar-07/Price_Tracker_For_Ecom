@@ -45,7 +45,7 @@ REDIS_URL=redis://localhost:6379
 ```bash
 docker pull redis:latest
 ```
-6. Run Redis using Docker 
+6. Run Redis Container using Docker 
 
 ```bash
 docker run -itd -p 6379:6379 redis
