@@ -41,7 +41,7 @@ BASE_URL=http://localhost:3000
 API_KEY="Scrapper Api"
 REDIS_URL=redis://localhost:6379
 ```
-5. Install Redis using Docker
+5. Install Redis Image
 ```bash
 docker pull redis:latest
 ```
