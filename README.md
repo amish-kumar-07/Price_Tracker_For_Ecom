@@ -1,6 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-##Architecture Diagram
-
+## Architecture Diagram
 
 
 ![Explain](https://github.com/user-attachments/assets/837d42ae-6898-485f-9141-c7011e570ba0)
