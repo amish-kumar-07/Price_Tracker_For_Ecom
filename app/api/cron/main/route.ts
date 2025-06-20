@@ -21,12 +21,17 @@ export async function GET() {
     }
 
     jobs.forEach(job => {
-      notifications.add("jobs", {
-        asin: job.asin,
-        email: job.email,
-        currentPrice: job.currentPrice, // added
-      });
+      if (job.status) {
+        notifications.add("jobs", {
+          asin: job.asin,
+          email: job.email,
+          currentPrice: job.currentPrice,
+          lastUpdated: job.lastUpdated,  
+          frequency: job.frequency,
+        });
+      }
     });
+
 
     return NextResponse.json(
       { message: "The jobs are in queue", data: jobs },
