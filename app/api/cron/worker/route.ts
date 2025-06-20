@@ -78,13 +78,12 @@ export async function GET() {
             });
 
             // ✅ Email logic only if price is same or decreased
-            if ((status === "same" || status === "decreased") && lastUpdated && frequency) {
-                    const lastHour = new Date(lastUpdated).getHours();
-                    const currentHour = new Date().getHours();
-                    const hourDiff = (currentHour - lastHour + 24) % 24;
+            if ((status === "same" || status === "decreased" || status === "increased") && lastUpdated && frequency) {
+                    const diffMs = new Date().getTime() - new Date(lastUpdated).getTime();
+                    const hourDiff = diffMs / (1000 * 60 * 60); // ⏱ Hours diff with decimal
 
-                  if (hourDiff >= frequency) {
-                    console.log(`📧 YES – ${frequency}hr mark hit for ASIN ${asin}. Send email to ${email}`);
+                  if (hourDiff ||  frequency) {
+                      console.log(`📧 YES – ${frequency}hr mark hit for ASIN ${asin}. Send email to ${email}`);
 
                     // ✅ Enqueue the job to email queue
                     try {

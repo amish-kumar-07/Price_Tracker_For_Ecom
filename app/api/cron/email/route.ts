@@ -3,10 +3,10 @@ import { Worker, Queue } from "bullmq";
 import IORedis from "ioredis";
 import { NextResponse } from "next/server";
 import { transporter, buildMail, sendEmail } from "@/lib/mailer";
-
 import { verifySmtp } from "@/lib/mailer";
-await verifySmtp();
 
+// Verify SMTP connection
+await verifySmtp();
 
 const connection = new IORedis({
   host: "localhost",
@@ -20,6 +20,8 @@ let arr: {
   newPrice: number;
   oldPrice: number;
   status: "same" | "decreased" | "increased";
+  success?: boolean;
+  error?: string;
 }[] = [];
 
 export async function GET() {
@@ -32,20 +34,53 @@ export async function GET() {
       "email",
       async job => {
         const { asin, email, newPrice, oldPrice, status } = job.data;
+        
+        console.log("📧 Processing job:", job.data);
+        
+        try {
+          console.log("📧 Building email for:", { asin, email, newPrice, oldPrice, status });
+          
+          const mailOptions = buildMail({
+            asin,
+            email,
+            newPrice,
+            oldPrice,
+            status,
+          });
 
-        const mailOptions = buildMail({
-          asin,
-          email,
-          newPrice,
-          oldPrice,
-          status,
-        });
+          console.log("📤 Sending email with options:", {
+            from: mailOptions.from,
+            to: mailOptions.to,
+            subject: mailOptions.subject
+          });
 
-        await sendEmail(mailOptions);
+          const result = await sendEmail(mailOptions);
+          
+          arr.push({ 
+            asin, 
+            email, 
+            newPrice, 
+            oldPrice, 
+            status, 
+            success: true 
+          });
 
-        arr.push({ asin, email, newPrice, oldPrice, status });
-
-        console.log(`✅ Email sent to ${email} for ASIN ${asin}`);
+          console.log(`✅ Email sent successfully to ${email} for ASIN ${asin}`, result.messageId);
+        } catch (error: any) {
+          console.error(`❌ Failed to send email to ${email} for ASIN ${asin}:`, error);
+          
+          arr.push({ 
+            asin, 
+            email, 
+            newPrice, 
+            oldPrice, 
+            status, 
+            success: false,
+            error: error.message 
+          });
+          
+          // Don't throw - let the job complete but mark as failed
+        }
       },
       {
         connection,
@@ -53,12 +88,24 @@ export async function GET() {
       }
     );
 
+    // Enhanced worker event handling
+    emailWorker.on("completed", (job) => {
+      console.log(`🏁 Job ${job.id} completed`);
+    });
+
+    emailWorker.on("failed", (job, err) => {
+      console.error(`💥 Job ${job?.id} failed:`, err);
+    });
+
     // Stop the worker once all jobs are done
     await new Promise<void>((resolve) => {
       emailWorker.on("completed", async () => {
         const waiting = await emailQueue.getWaiting();
         const active = await emailQueue.getActive();
+        console.log(`📊 Queue status - Waiting: ${waiting.length}, Active: ${active.length}`);
+        
         if (waiting.length === 0 && active.length === 0) {
+          console.log("🔚 All jobs completed, closing worker");
           await emailWorker.close();
           resolve();
         }
@@ -68,15 +115,27 @@ export async function GET() {
       setTimeout(async () => {
         const waiting = await emailQueue.getWaiting();
         const active = await emailQueue.getActive();
+        console.log(`⏰ Timeout check - Waiting: ${waiting.length}, Active: ${active.length}`);
+        
         if (waiting.length === 0 && active.length === 0) {
+          console.log("🔚 Timeout reached, closing worker");
           await emailWorker.close();
           resolve();
         }
       }, 1000);
     });
 
-    return NextResponse.json({ message: "✅ Emails processed", data: arr });
+    return NextResponse.json({ 
+      message: "✅ Emails processed", 
+      data: arr,
+      summary: {
+        total: arr.length,
+        successful: arr.filter(item => item.success).length,
+        failed: arr.filter(item => !item.success).length
+      }
+    });
   } catch (error: any) {
+    console.error("❌ Email worker error:", error);
     return NextResponse.json(
       { error: "❌ Email processing failed", message: error.message },
       { status: 500 }

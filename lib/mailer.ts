@@ -1,7 +1,6 @@
 // lib/mailer.ts
 import nodemailer from "nodemailer";
 
-
 /* ------------ Mail transporter (shared) ------------ */
 export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -13,7 +12,6 @@ export const transporter = nodemailer.createTransport({
   },
   logger: process.env.NODE_ENV !== "production", // useful in dev
 });
-
 
 /* ------------ Helper to build the e‑mail ------------ */
 export function buildMail({
@@ -42,17 +40,21 @@ export function buildMail({
       ? "Price alert: Your product just got cheaper!"
       : `Update on your tracked product – price ${trend}`;
 
+  // Fixed locale strings - using regular hyphen instead of special character
+  const formattedOldPrice = oldPrice.toLocaleString("en-IN");
+  const formattedNewPrice = newPrice.toLocaleString("en-IN");
+
   const html = /* html */ `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;">
       <h2 style="color:#111;">${
         status === "decreased" ? "🎉 Good news!" : "ℹ️ Update"
       }</h2>
-      <p>The price for the item you’re tracking <strong>(${asin})</strong> has <strong>${trend}</strong>.</p>
+      <p>The price for the item you're tracking <strong>(${asin})</strong> has <strong>${trend}</strong>.</p>
 
       <table role="presentation" cellspacing="0" cellpadding="8" style="width:100%;border-collapse:collapse;">
         <tr>
           <td style="background:#f5f5f5;">Previous price</td>
-          <td style="background:#f5f5f5;">₹${oldPrice.toLocaleString("en‑IN")}</td>
+          <td style="background:#f5f5f5;">₹${formattedOldPrice}</td>
         </tr>
         <tr>
           <td style="background:${
@@ -60,7 +62,7 @@ export function buildMail({
           };">Current price</td>
           <td style="background:${
             status === "decreased" ? "#d4edda" : "#fff3cd"
-          };"><strong>₹${newPrice.toLocaleString("en-IN")}</strong></td>
+          };"><strong>₹${formattedNewPrice}</strong></td>
         </tr>
       </table>
 
@@ -80,16 +82,16 @@ export function buildMail({
 
   const text = `
 ${status === "decreased" ? "Good news!" : "Update"} – the price for ASIN ${asin} has ${trend}.
-Old price: ₹${oldPrice}
-New price: ₹${newPrice}
+Old price: ₹${formattedOldPrice}
+New price: ₹${formattedNewPrice}
 
 Product link: ${productUrl}
 
-You’re receiving this because you set up an alert in the Price‑Tracker app.
+You're receiving this because you set up an alert in the Price‑Tracker app.
 `;
 
   return {
-    from: `"Price‑Tracker" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: email,
     subject,
     html,
@@ -107,7 +109,7 @@ export async function verifySmtp() {
   }
 }
 
-// In lib/mailer.ts
+/* ------------ Send email function ------------ */
 export async function sendEmail(mailOptions: ReturnType<typeof buildMail>) {
   try {
     const info = await transporter.sendMail(mailOptions);
