@@ -3,6 +3,8 @@
 
 ![Explain](https://github.com/user-attachments/assets/837d42ae-6898-485f-9141-c7011e570ba0)
 
+## Sample Output
+![WhatsApp Image 2025-06-20 at 13 19 13_9f26ff85](https://github.com/user-attachments/assets/a17ff089-28d8-41c5-9511-abe2e0666858)
 
 ## Dependent
 1. Redis
