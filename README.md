@@ -9,6 +9,7 @@
 2. Scrapper Api
 3. Bull Mq
 4. DB
+5. Nodemailer
 
 
 ## Getting Started
