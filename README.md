@@ -10,8 +10,22 @@
 3. Bull Mq
 4. DB
 5. Nodemailer
+6. Docker
 
+## Env
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER="your email"
+SMTP_PASS="your password"
+SMTP_SECURE=true
+SMTP_FROM=alerts@yourdomain.com  # optional override
 
+DATABASE_URL=""
+BASE_URL=http://localhost:3000
+API_KEY="Scrapper Api"
+REDIS_URL=redis://localhost:6379
+```
 ## Getting Started
 
 First, run the development server:
