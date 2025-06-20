@@ -55,5 +55,5 @@ docker run -itd -p 6379:6379 redis
 npm run dev
 ```
 
-## Querey
+## Query
 Contact : rashusingh110@gmail.com
