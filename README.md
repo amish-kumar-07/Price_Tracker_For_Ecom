@@ -50,6 +50,10 @@ docker pull redis:latest
 ```bash
 docker run -itd -p 6379:6379 redis
 ```
+7. Run Your Project
+```bash
+npm run dev
+```
 
 ## Querey
 Contact : rashusingh110@gmail.com
