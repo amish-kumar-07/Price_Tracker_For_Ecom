@@ -14,20 +14,6 @@
 5. Nodemailer
 6. Docker
 
-## Env
-```
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER="your email"
-SMTP_PASS="your password"
-SMTP_SECURE=true
-SMTP_FROM=alerts@yourdomain.com  # optional override
-
-DATABASE_URL=""
-BASE_URL=http://localhost:3000
-API_KEY="Scrapper Api"
-REDIS_URL=redis://localhost:6379
-```
 ## Getting Started
 
 1. First, Git Clone:
@@ -41,7 +27,20 @@ git clone https://github.com/amish-kumar-07/Price_Tracker_For_Ecom
 npm run dev
 ```
 3. Configure Env:
-4. Install Redis using Docker
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER="your email"
+SMTP_PASS="your password"
+SMTP_SECURE=true
+SMTP_FROM=alerts@yourdomain.com  # optional override
+
+DATABASE_URL=""
+BASE_URL=http://localhost:3000
+API_KEY="Scrapper Api"
+REDIS_URL=redis://localhost:6379
+```
+5. Install Redis using Docker
 ```bash
 docker pull redis:latest
 ```
