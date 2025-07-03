@@ -26,7 +26,6 @@ type Product = {
 };
 
 const loadingStates = [
-  { text: "Buying a condo" },
   { text: "Travelling in a flight" },
   { text: "Meeting Tyler Durden" },
   { text: "He makes soap" },

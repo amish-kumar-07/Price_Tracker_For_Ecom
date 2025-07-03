@@ -26,7 +26,7 @@ function cleanPrice(price: string | number): number {
 }
 
 const myMap = new Map();
-const API = "0ffeda8d1cf907c12f14fe61d864090f";
+const API = "c6c493430659b46ed91a64892a92a408";
 
 const jobQueue = new Queue("jobs", { connection });
 const emailQueue = new Queue("email", { connection });
@@ -82,7 +82,7 @@ export async function GET() {
                     const diffMs = new Date().getTime() - new Date(lastUpdated).getTime();
                     const hourDiff = diffMs / (1000 * 60 * 60); // ⏱ Hours diff with decimal
 
-                  if (hourDiff ||  frequency) {
+                  if (hourDiff >= frequency) {
                       console.log(`📧 YES – ${frequency}hr mark hit for ASIN ${asin}. Send email to ${email}`);
 
                     // ✅ Enqueue the job to email queue
