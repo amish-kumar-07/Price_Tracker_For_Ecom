@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { NavigationMenuDemo } from './dashboard/_components/navbar';
+import { NavbarDemo } from './dashboard/_components/navbar';
 import { 
   Search, 
   Bell, 
@@ -88,7 +88,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Navigation */}
       <div className="w-full flex justify-evenly items-center">
-        <NavigationMenuDemo />
+        <NavbarDemo />
       </div>
       
       {/* Hero Section */}

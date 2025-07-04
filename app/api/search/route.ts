@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+const API = process.env.API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
-    const url = `https://api.scraperapi.com/?api_key=c6c493430659b46ed91a64892a92a408&url=https://www.amazon.in/s?k=${encodeURIComponent(item)}&render=true&autoparse=true`;
+    const url = `https://api.scraperapi.com/?api_key=${API}&url=https://www.amazon.in/s?k=${encodeURIComponent(item)}&render=true&autoparse=true`;
 
     const res = await fetch(url, {
       method: "GET",

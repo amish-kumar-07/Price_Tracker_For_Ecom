@@ -26,7 +26,7 @@ function cleanPrice(price: string | number): number {
 }
 
 const myMap = new Map();
-const API = "c6c493430659b46ed91a64892a92a408";
+const API = process.env.API_KEY;
 
 const jobQueue = new Queue("jobs", { connection });
 const emailQueue = new Queue("email", { connection });
