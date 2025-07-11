@@ -3,15 +3,15 @@
   "crons": [
     {
       "path": "/api/cron/main",
-      "schedule": "*/30 * * * *"
+      "schedule": "* * * 1 *"
     },
     {
       "path": "/api/cron/worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * 1 *"
     },
     {
       "path": "/api/cron/email",
-      "schedule": "* 0 * * *"
+      "schedule": "* * * 1 *"
     }
   ]
 }
