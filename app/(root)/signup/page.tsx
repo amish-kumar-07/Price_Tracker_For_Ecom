@@ -9,7 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 
-export function SignupFormDemo() {
+function SignupFormDemo() {
   const route = useRouter();
   const [name, setName] = useState<string | undefined>('');
   const [email , setemail] = useState<string | undefined>('');
