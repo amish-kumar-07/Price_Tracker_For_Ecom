@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { NavigationMenuDemo } from './_components/navbar';
+import { NavbarDemo } from './_components/navbar';
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import React from "react";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
@@ -25,8 +25,9 @@ type Product = {
   is_amazon_choice?: boolean;
 };
 
+type SortOption = 'relevance' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'reviews_high';
+
 const loadingStates = [
-  { text: "Buying a condo" },
   { text: "Travelling in a flight" },
   { text: "Meeting Tyler Durden" },
   { text: "He makes soap" },
@@ -42,6 +43,8 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const { userId , userEmail } = useUser();
   const [progress, setProgress] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('relevance');
+  const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
 
   const placeholders = [
     "What's the first rule of Fight Club?",
@@ -50,6 +53,78 @@ export default function Page() {
     "Write a JavaScript method to reverse a string",
     "How to assemble your own PC?",
   ];
+
+  // Helper function to extract numeric price from price string or number
+  const extractPrice = (product: Product): number => {
+    if (typeof product.price === 'number') {
+      return product.price;
+    }
+    
+    if (typeof product.price === 'string') {
+      const match = product.price.match(/[\d,]+\.?\d*/);
+      return match ? parseFloat(match[0].replace(/,/g, '')) : 0;
+    }
+    
+    if (product.price_string) {
+      const match = product.price_string.match(/[\d,]+\.?\d*/);
+      return match ? parseFloat(match[0].replace(/,/g, '')) : 0;
+    }
+    
+    return 0;
+  };
+
+  // Helper function to extract numeric rating
+  const extractRating = (product: Product): number => {
+    if (typeof product.stars === 'number') {
+      return product.stars;
+    }
+    
+    if (typeof product.stars === 'string') {
+      const match = product.stars.match(/[\d.]+/);
+      return match ? parseFloat(match[0]) : 0;
+    }
+    
+    return 0;
+  };
+
+  // Sort products based on selected option
+  const sortProducts = (productsToSort: Product[], sortOption: SortOption): Product[] => {
+    const sortedProducts = [...productsToSort];
+    
+    switch (sortOption) {
+      case 'relevance':
+        return originalProducts.length > 0 ? [...originalProducts] : sortedProducts;
+      
+      case 'price_low':
+        return sortedProducts.sort((a, b) => extractPrice(a) - extractPrice(b));
+      
+      case 'price_high':
+        return sortedProducts.sort((a, b) => extractPrice(b) - extractPrice(a));
+      
+      case 'rating_high':
+        return sortedProducts.sort((a, b) => extractRating(b) - extractRating(a));
+      
+      case 'rating_low':
+        return sortedProducts.sort((a, b) => extractRating(a) - extractRating(b));
+      
+      case 'reviews_high':
+        return sortedProducts.sort((a, b) => (b.total_reviews || 0) - (a.total_reviews || 0));
+      
+      default:
+        return sortedProducts;
+    }
+  };
+
+  // Handle sort change
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortOption = e.target.value as SortOption;
+    setSortBy(newSortOption);
+    
+    if (products.length > 0) {
+      const sortedProducts = sortProducts(products, newSortOption);
+      setProduct(sortedProducts);
+    }
+  };
 
   const addNotification = async (product: Product) => {
     try {
@@ -144,6 +219,7 @@ export default function Page() {
       if (!response.ok) {
         console.error("❌ Failed to add product:", data.message);
         alert(`❌ Error: ${data.message}`);
+        setProgress(null);
         return;
       }
       setProgress(50);
@@ -162,6 +238,7 @@ export default function Page() {
       console.error("🔥 Unexpected error:", error);
       setProgress(null);
       //alert("⚠️ Something went wrong. Please try again.");
+      return;
     }
   };
 
@@ -178,7 +255,9 @@ export default function Page() {
       });
       const data = await response.json();
       if (response.ok) {
+        setOriginalProducts(data.products); // Store original order
         setProduct(data.products);
+        setSortBy('relevance'); // Reset to relevance when new search is performed
         console.log("Product API response:", data.products);
       } else {
         console.error("API Error:", data.message);
@@ -190,66 +269,103 @@ export default function Page() {
     }
   };
 
-  return (
-    <div className="min-h-screen w-full flex flex-col items-center bg-white dark:bg-black relative">
-      {/* Loader */}
-      {loading && (
-        <>
-          <Loader loadingStates={loadingStates} loading={loading} duration={2000} />
-          <button
-            className="fixed top-4 right-4 text-black dark:text-white z-[120]"
-            onClick={() => setLoading(false)}
-          >
-            <IconSquareRoundedX className="h-10 w-10" />
-          </button>
-        </>
-      )}
+ return (
+  <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black relative">
+    {/* Loader */}
+    {loading && (
+      <>
+        <Loader loadingStates={loadingStates} loading={loading} duration={2000} />
+        <button
+          className="fixed top-4 right-4 text-black dark:text-white z-[120] hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-full transition-colors duration-200"
+          onClick={() => setLoading(false)}
+        >
+          <IconSquareRoundedX className="h-8 w-8" />
+        </button>
+      </>
+    )}
 
-      {/* ⇢ Center‑screen progress bar (show while progress !== null) */}
-      {progress !== null && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <Progress value={progress} className="w-2/3 max-w-md" />
+    {/* ⇢ Center‑screen progress bar (show while progress !== null) */}
+    {progress !== null && (
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-md">
+        <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+          <Progress value={progress} className="w-80 h-3" />
+          <p className="text-center mt-4 text-gray-600 dark:text-gray-300 text-sm">
+            Processing your request...
+          </p>
         </div>
-      )}
-
-
-      {/* Navigation */}
-      <div className="w-full flex justify-evenly items-center">
-        <NavigationMenuDemo />
       </div>
+    )}
 
-      {/* Search Section */}
-      <div className="w-full flex flex-col items-center px-4 mt-10">
-        <h2 className="mb-10 text-xl text-center sm:text-5xl dark:text-white text-black">
+    {/* Navigation */}
+    <div className="w-full flex justify-evenly items-center px-4 sm:px-6 lg:px-8 py-4 shadow-sm bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+      <NavbarDemo />
+    </div>
+
+    {/* Search Section */}
+    <div className="w-full flex flex-col items-center px-4 mt-16 mb-8">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-6xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4">
           Search Your Product Here
         </h2>
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Discover amazing products with detailed reviews and competitive pricing
+        </p>
+      </div>
+      
+      <div className="w-full max-w-2xl">
         <PlaceholdersAndVanishInput
           placeholders={placeholders}
           onChange={(e) => setItem(e.target.value)}
           onSubmit={onSubmit}
         />
       </div>
+    </div>
 
-      {/* Product Results */}
-      {products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12 w-full px-4 pb-10">
+    {/* Product Results */}
+       <div className="w-full px-4 pb-16">
+    {products.length > 0 && (
+      <>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-white">
+              Search Results ({products.length} products)
+            </h3>
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <span>Sort by:</span>
+              <select 
+                value={sortBy}
+                onChange={handleSortChange}
+                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                <option value="relevance">Relevance</option>
+                <option value="price_low">Price: Low to High</option>
+                <option value="price_high">Price: High to Low</option>
+                <option value="rating_high">Rating: High to Low</option>
+                <option value="rating_low">Rating: Low to High</option>
+                <option value="reviews_high">Most Reviews</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12 w-full px-4 pb-10">
           {products.map((product, index) => (
-            <CardContainer key={index} className="inter-var">
-              <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-auto rounded-xl p-6 border">
+            <CardContainer key={index} className="inter-var h-full">
+              <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-6 border flex flex-col">
                 <CardItem
                   translateZ="50"
-                  className="text-lg font-semibold text-neutral-600 dark:text-white h-14 overflow-hidden text-ellipsis line-clamp-2"
+                  className="text-lg font-semibold text-neutral-600 dark:text-white h-14 overflow-hidden text-ellipsis line-clamp-2 flex items-center"
                 >
                   {product.name}
                 </CardItem>
                 <CardItem
                   as="p"
                   translateZ="60"
-                  className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
+                  className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300 h-6 flex items-center"
                 >
                   ⭐ {product.stars} ({product.total_reviews} reviews)
                 </CardItem>
-                <CardItem translateZ="100" className="w-full mt-4">
+                <CardItem translateZ="100" className="w-full mt-4 flex-1 flex items-center">
                   <img
                     src={product.image}
                     height="1000"
@@ -279,7 +395,7 @@ export default function Page() {
                       View on Amazon →
                     </CardItem>
                   </div>
-
+                  
                   {/* Notification bell button */}
                   <CardItem
                     as="button"
@@ -309,7 +425,9 @@ export default function Page() {
             </CardContainer>
           ))}
         </div>
+        </>
       )}
     </div>
+  </div>
   );
 }

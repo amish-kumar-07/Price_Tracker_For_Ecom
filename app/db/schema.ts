@@ -37,7 +37,7 @@ export const products = pgTable(
     name: varchar("name", { length: 256 }).notNull(),
     url: varchar("url", { length: 1024 }).notNull().unique(),
     image: varchar("image", { length: 1024 }),
-    asin: varchar("asin", { length: 256 }).notNull(),
+    asin: varchar("asin", { length: 256 }).notNull().unique(),
 
     platform: varchar("platform", { length: 50 }).notNull(), // "amazon", "flipkart", "myntra"
     platformProductId: varchar("platform_product_id", { length: 100 }),
@@ -46,7 +46,6 @@ export const products = pgTable(
     originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
 
     priceString: varchar("price_string", { length: 100 }),
-
     stars: decimal("stars", { precision: 3, scale: 2 }),
     totalReviews: integer("total_reviews"),
 
@@ -62,52 +61,38 @@ export const products = pgTable(
   }),
 );
 
-/* ------------------------------------------------------------------ */
-/*  USER ↔ PRODUCT JOIN (tracking list)                               */
-/* ------------------------------------------------------------------ */
-export const userProducts = pgTable(
-  "user_products",
-  {
-    userId: integer("user_id")
+export const dir =pgTable('dir',{
+   id : serial('id').primaryKey(),
+   asin: varchar("asin", { length: 255 })
       .notNull()
-      .references(() => users.userId, { onDelete: "cascade" }),
+      .references(() => products.asin, { onDelete: "cascade" }),
+   dircription : varchar('dircription',{length : 700}),
+   serId: integer("user_id").references(() => users.userId, { onDelete: "set null" }),
+});
 
-    productId: integer("product_id")
-      .notNull()
-      .references(() => products.productId, { onDelete: "cascade" }),
-
-    initialPrice: decimal("initial_price", { precision: 10, scale: 2 }),
-    targetPrice: decimal("target_price", { precision: 10, scale: 2 }),
-    notes: varchar("notes", { length: 512 }),
-
-    addedAt: timestamp("added_at").defaultNow(),
-  },
-  table => ({
-    pk: primaryKey({ columns: [table.userId, table.productId] }),
-  }),
-);
 
 /* ------------------------------------------------------------------ */
-/*  PRICE HISTORY (point‑in‑time snapshots)                            */
+/*  PRICE HISTORY (point‑in‑time snapshots)                           */
 /* ------------------------------------------------------------------ */
 export const priceHistory = pgTable(
   "price_history",
   {
     id: serial("id").primaryKey(),
-
-    productId: integer("product_id")
+    email: varchar("email", { length: 255 }).notNull(), // ✅ this stays same
+    asin: varchar("asin", { length: 255 })
       .notNull()
-      .references(() => products.productId, { onDelete: "cascade" }),
-
-    price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-    priceString: varchar("price_string", { length: 100 }),
-
-    recordedAt: timestamp("recorded_at").defaultNow(),
+      .references(() => products.asin, { onDelete: "cascade" }),
+    trackedAt: timestamp("tracked_at").defaultNow().notNull(),
+    currentPrice: decimal("current_price", { precision: 10, scale: 2 }).notNull(),
+    originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
+    platform: varchar("platform", { length: 50 }),
+    userId: integer("user_id").references(() => users.userId, { onDelete: "set null" }),
   },
-  table => ({
-    productIdIdx: index("price_history_product_id_idx").on(table.productId),
-  }),
+  (table) => ({
+    asinTrackedAtIdx: index("price_history_asin_tracked_at_idx").on(table.asin, table.trackedAt),
+  })
 );
+
 
 /* ------------------------------------------------------------------ */
 /*  NOTIFICATION SETTINGS / LOG                                       */
@@ -118,7 +103,8 @@ export const notificationSettings = pgTable(
     id: serial("id").primaryKey(),
 
     email: varchar("email", { length: 255 }).notNull(),
-    asin: varchar("asin", { length: 255 }).notNull(),
+    asin: varchar("asin", { length: 255 }) .notNull()
+      .references(() => products.asin, { onDelete: "cascade" }),
 
     frequency: integer("frequency").default(3).notNull(), // in hours
     lastUpdated: timestamp("last_updated").defaultNow(),
