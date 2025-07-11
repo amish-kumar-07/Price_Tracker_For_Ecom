@@ -67,7 +67,7 @@ export const dir =pgTable('dir',{
       .notNull()
       .references(() => products.asin, { onDelete: "cascade" }),
    dircription : varchar('dircription',{length : 700}),
-   serId: integer("user_id").references(() => users.userId, { onDelete: "set null" }),
+   userId: integer("user_id").references(() => users.userId, { onDelete: "set null" }),
 });
 
 
