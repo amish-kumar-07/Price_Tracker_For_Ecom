@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Navbar,
   NavBody,
@@ -10,29 +11,25 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
+
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 export function NavbarDemo() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const navItems = [
-    {
-      name: "Home",
-      link: "/dashboard",
-    },
-    {
-      name: "Alert",
-      link: "/dashboard/alert",
-    },
-    {
-      name: "Pricing",
-      link: "#pricing",
-    },
-    {
-      name: "Contact",
-      link: "#contact",
-    },
+    { name: "Home", link: "/dashboard" },
+    { name: "Alert", link: "/dashboard/alert" },
+    { name: "History", link: "/dashboard/history" },
+    { name: "Contact", link: "/dashboard/contact" },
   ];
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const handleLoginClick = () => {
+    router.push("/signin");
+  };
 
   return (
     <div className="relative w-full">
@@ -42,8 +39,12 @@ export function NavbarDemo() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
+            {pathname === "/" && (
+              <NavbarButton variant="secondary" onClick={handleLoginClick}>
+                Login
+              </NavbarButton>
+            )}
+            <NavbarButton variant="primary">Upgrade</NavbarButton>
           </div>
         </NavBody>
 
@@ -53,7 +54,7 @@ export function NavbarDemo() {
             <NavbarLogo />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             />
           </MobileNavHeader>
 
@@ -71,14 +72,20 @@ export function NavbarDemo() {
                 <span className="block">{item.name}</span>
               </a>
             ))}
-            <div className="flex w-full flex-col gap-4">
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Login
-              </NavbarButton>
+
+            <div className="flex w-full flex-col gap-4 mt-4">
+              {pathname === "/" && (
+                <NavbarButton
+                  onClick={() => {
+                    handleLoginClick();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="primary"
+                  className="w-full"
+                >
+                  Login
+                </NavbarButton>
+              )}
               <NavbarButton
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"

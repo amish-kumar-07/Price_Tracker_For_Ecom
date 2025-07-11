@@ -28,7 +28,6 @@ type Product = {
 type SortOption = 'relevance' | 'price_low' | 'price_high' | 'rating_high' | 'rating_low' | 'reviews_high';
 
 const loadingStates = [
-  {text : "Buying a Condom"},
   { text: "Travelling in a flight" },
   { text: "Meeting Tyler Durden" },
   { text: "He makes soap" },
@@ -298,7 +297,7 @@ export default function Page() {
     )}
 
     {/* Navigation */}
-    <div className="w-full flex justify-evenly items-center shadow-sm bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <div className="w-full flex justify-evenly items-center px-4 sm:px-6 lg:px-8 py-4 shadow-sm bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
       <NavbarDemo />
     </div>
 

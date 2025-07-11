@@ -1,6 +1,6 @@
 {
-  "id": "17ae7c51-fad1-4b7f-b33b-cc0429dbcca2",
-  "prevId": "dd8dab0b-5df2-411b-a636-e49ce12d54ef",
+  "id": "6edb6389-60e5-45b9-8e33-62f9b7bf9a39",
+  "prevId": "864cefb6-4d41-4a8d-9242-c1fb524c02b3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -42,6 +42,70 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dir": {
+      "name": "dir",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "asin": {
+          "name": "asin",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dircription": {
+          "name": "dircription",
+          "type": "varchar(700)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dir_asin_products_asin_fk": {
+          "name": "dir_asin_products_asin_fk",
+          "tableFrom": "dir",
+          "tableTo": "products",
+          "columnsFrom": [
+            "asin"
+          ],
+          "columnsTo": [
+            "asin"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "dir_user_id_users_user_id_fk": {
+          "name": "dir_user_id_users_user_id_fk",
+          "tableFrom": "dir",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -128,6 +192,19 @@
         }
       },
       "foreignKeys": {
+        "notification_settings_asin_products_asin_fk": {
+          "name": "notification_settings_asin_products_asin_fk",
+          "tableFrom": "notification_settings",
+          "tableTo": "products",
+          "columnsFrom": [
+            "asin"
+          ],
+          "columnsTo": [
+            "asin"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "notification_settings_user_id_users_user_id_fk": {
           "name": "notification_settings_user_id_users_user_id_fk",
           "tableFrom": "notification_settings",
@@ -158,38 +235,62 @@
           "primaryKey": true,
           "notNull": true
         },
-        "product_id": {
-          "name": "product_id",
-          "type": "integer",
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
-        "price": {
-          "name": "price",
+        "asin": {
+          "name": "asin",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tracked_at": {
+          "name": "tracked_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "current_price": {
+          "name": "current_price",
           "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": true
         },
-        "price_string": {
-          "name": "price_string",
-          "type": "varchar(100)",
+        "original_price": {
+          "name": "original_price",
+          "type": "numeric(10, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "recorded_at": {
-          "name": "recorded_at",
-          "type": "timestamp",
+        "platform": {
+          "name": "platform",
+          "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
-        "price_history_product_id_idx": {
-          "name": "price_history_product_id_idx",
+        "price_history_asin_tracked_at_idx": {
+          "name": "price_history_asin_tracked_at_idx",
           "columns": [
             {
-              "expression": "product_id",
+              "expression": "asin",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "tracked_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -202,17 +303,30 @@
         }
       },
       "foreignKeys": {
-        "price_history_product_id_products_product_id_fk": {
-          "name": "price_history_product_id_products_product_id_fk",
+        "price_history_asin_products_asin_fk": {
+          "name": "price_history_asin_products_asin_fk",
           "tableFrom": "price_history",
           "tableTo": "products",
           "columnsFrom": [
-            "product_id"
+            "asin"
           ],
           "columnsTo": [
-            "product_id"
+            "asin"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "price_history_user_id_users_user_id_fk": {
+          "name": "price_history_user_id_users_user_id_fk",
+          "tableFrom": "price_history",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -373,93 +487,15 @@
           "columns": [
             "url"
           ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.user_products": {
-      "name": "user_products",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
         },
-        "product_id": {
-          "name": "product_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "initial_price": {
-          "name": "initial_price",
-          "type": "numeric(10, 2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "target_price": {
-          "name": "target_price",
-          "type": "numeric(10, 2)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "notes": {
-          "name": "notes",
-          "type": "varchar(512)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "added_at": {
-          "name": "added_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_products_user_id_users_user_id_fk": {
-          "name": "user_products_user_id_users_user_id_fk",
-          "tableFrom": "user_products",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "user_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "user_products_product_id_products_product_id_fk": {
-          "name": "user_products_product_id_products_product_id_fk",
-          "tableFrom": "user_products",
-          "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "product_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "user_products_user_id_product_id_pk": {
-          "name": "user_products_user_id_product_id_pk",
+        "products_asin_unique": {
+          "name": "products_asin_unique",
+          "nullsNotDistinct": false,
           "columns": [
-            "user_id",
-            "product_id"
+            "asin"
           ]
         }
       },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

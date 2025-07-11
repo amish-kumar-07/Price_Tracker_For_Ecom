@@ -1,1 +1,0 @@
-ALTER TABLE "products" ADD CONSTRAINT "products_asin_unique" UNIQUE("asin");

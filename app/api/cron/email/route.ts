@@ -55,6 +55,25 @@ export async function GET() {
           });
 
           const result = await sendEmail(mailOptions);
+          try {
+              await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/price-history`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  asin,
+                  currentPrice: newPrice,     // ✅ Match schema field name
+                  originalPrice: oldPrice,    // Optional but useful
+                  platform: "amazon",         // Optional, if you have this
+                }),
+              });
+
+              console.log("📦 Price history sent to /api/price-history");
+            } catch (apiError: any) {
+              console.error("❌ Failed to send price history to endpoint:", apiError);
+            }
+
           
           arr.push({ 
             asin, 
@@ -79,7 +98,6 @@ export async function GET() {
             error: error.message 
           });
           
-          // Don't throw - let the job complete but mark as failed
         }
       },
       {
